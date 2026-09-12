@@ -80,7 +80,8 @@ Return ONLY a raw valid JSON object (no markdown, no backticks) with this struct
   ]
 }`;
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+    const model = process.env.GEMINI_MODEL || "gemini-3.6-flash";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -106,7 +107,7 @@ Return ONLY a raw valid JSON object (no markdown, no backticks) with this struct
     const durationMs = Date.now() - startTime;
 
     // Log AI usage and costs
-    await this.logAiCost(invoiceId, "gemini-1.5-flash", inputTokens, outputTokens, costUsd, durationMs);
+    await this.logAiCost(invoiceId, model, inputTokens, outputTokens, costUsd, durationMs);
 
     const findings: Finding[] = (parsed.findings || []).map((f: any) => ({
       ruleCode: f.ruleCode || "EXPENSE_MISCLASSIFICATION",
@@ -187,7 +188,8 @@ Return ONLY a raw valid JSON object (no markdown, no backticks) with this struct
       (outputTokens / 1_000_000) * this.OUTPUT_PRICE_PER_M;
     const durationMs = Date.now() - startTime;
 
-    await this.logAiCost(invoiceId, "gemini-1.5-flash-semantic", inputTokens, outputTokens, costUsd, durationMs);
+    const fallbackModel = (process.env.GEMINI_MODEL || "gemini-3.6-flash") + "-semantic";
+    await this.logAiCost(invoiceId, fallbackModel, inputTokens, outputTokens, costUsd, durationMs);
 
     return {
       hasSemanticAnomaly: findings.length > 0,
