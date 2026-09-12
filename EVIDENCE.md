@@ -204,3 +204,37 @@ Content-Length: 3106
 ```
 **Login Verification:** Valid credentials return JWT token; invalid password returns HTTP `401 Unauthorized`. Protected endpoint `GET /api/v1/auth/me` without Bearer token returns HTTP `401 Unauthorized`.
 
+---
+
+### Probe 9: Comprehensive 19-Route End-to-End Suite (`npm run test:routes`)
+**Test Command:** `npm run test:routes`  
+**Output:**
+```text
+┌─────────┬────────┬───────────────────────────────────────┬─────────────────┬───────────────┬───────────┬───────────┬───────────────────────────────────────┐
+│ (index) │ Method │ Route                                 │ Expected Status │ Actual Status │ Result    │ Time (ms) │ Notes                                 │
+├─────────┼────────┼───────────────────────────────────────┼─────────────────┼───────────────┼───────────┼───────────┼───────────────────────────────────────┤
+│ 0       │ 'GET'  │ '/health'                             │ 200             │ 200           │ '✅ PASS' │ 80        │ 'OK'                                  │
+│ 1       │ 'GET'  │ '/docs/'                              │ 200             │ 200           │ '✅ PASS' │ 6         │ 'Binary stream received (3106 bytes)' │
+│ 2       │ 'POST' │ '/api/v1/auth/register'               │ 201             │ 201           │ '✅ PASS' │ 116       │ 'User and tenant registered succe...' │
+│ 3       │ 'POST' │ '/api/v1/auth/login'                  │ 200             │ 200           │ '✅ PASS' │ 94        │ 'Login successful'                    │
+│ 4       │ 'POST' │ '/api/v1/auth/login'                  │ 401             │ 401           │ '✅ PASS' │ 89        │ 'Invalid email or password'           │
+│ 5       │ 'GET'  │ '/api/v1/auth/me'                     │ 401             │ 401           │ '✅ PASS' │ 18        │ 'Authorization Bearer token is re...' │
+│ 6       │ 'GET'  │ '/api/v1/auth/me'                     │ 200             │ 200           │ '✅ PASS' │ 18        │ 'Success'                             │
+│ 7       │ 'POST' │ '/api/v1/invoices/audit-single'       │ 200             │ 200           │ '✅ PASS' │ 37        │ 'Success'                             │
+│ 8       │ 'POST' │ '/api/v1/invoices/audit-single'       │ 200             │ 200           │ '✅ PASS' │ 33        │ 'Success'                             │
+│ 9       │ 'POST' │ '/api/v1/invoices/audit-single'       │ 400             │ 400           │ '✅ PASS' │ 8         │ 'Validation failed at boundary'       │
+│ 10      │ 'GET'  │ '/api/v1/invoices?limit=5'            │ 200             │ 200           │ '✅ PASS' │ 18        │ 'Success'                             │
+│ 11      │ 'GET'  │ '/api/v1/invoices/:id'                │ 200             │ 200           │ '✅ PASS' │ 14        │ 'Success'                             │
+│ 12      │ 'GET'  │ '/api/v1/invoices/:invalid'           │ 404             │ 404           │ '✅ PASS' │ 15        │ "Invoice with id 'non-existent-uu..." │
+│ 13      │ 'POST' │ '/api/v1/batches'                     │ 202             │ 202           │ '✅ PASS' │ 25        │ 'Invoice batch accepted for async...' │
+│ 14      │ 'GET'  │ '/api/v1/batches/:id'                 │ 200             │ 200           │ '✅ PASS' │ 19        │ 'Success'                             │
+│ 15      │ 'GET'  │ '/api/v1/batches/:id/report.pdf'      │ 200             │ 200           │ '✅ PASS' │ 31        │ 'Binary stream received (2832 bytes)' │
+│ 16      │ 'GET'  │ '/api/v1/batches/:invalid'            │ 404             │ 404           │ '✅ PASS' │ 16        │ "Batch with id '00000000-0000-000..." │
+│ 17      │ 'GET'  │ '/api/v1/audit/costs'                 │ 200             │ 200           │ '✅ PASS' │ 14        │ 'Success'                             │
+│ 18      │ 'GET'  │ '/api/v1/non-existent-endpoint'       │ 404             │ 404           │ '✅ PASS' │ 14        │ 'Endpoint not found: GET /api/v1/...' │
+└─────────┴────────┴───────────────────────────────────────┴─────────────────┴───────────────┴───────────┴───────────┴───────────────────────────────────────┘
+
+🏁 Total Routes Tested: 19 | ✅ Passed: 19 | ❌ Failed: 0
+```
+
+

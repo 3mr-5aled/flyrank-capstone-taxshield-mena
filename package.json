@@ -9,6 +9,7 @@
     "start": "node dist/server.js",
     "seed": "tsx src/seed.ts",
     "test": "tsx src/test-all.ts",
+    "test:routes": "tsx src/test-all-routes.ts",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:generate": "prisma generate"
