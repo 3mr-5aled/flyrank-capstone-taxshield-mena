@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import { prisma } from "./db/prisma.js";
 import { BatchService } from "./modules/batches/batch.service.js";
 
@@ -26,9 +27,39 @@ async function main() {
     },
   });
 
-  console.log(`✅ Tenants created: ${ksaTenant.name} (${ksaTenant.country}), ${egyTenant.name} (${egyTenant.country})`);
+  // 2. Create Demo User Accounts
+  console.log("Creating demo user accounts...");
+  const hashedPassword = await bcrypt.hash("Password123!", 10);
 
-  // 2. Seed a Sample Pre-Audited Batch with Real-World Discrepancies
+  const ksaUser = await prisma.user.upsert({
+    where: { email: "accountant@riyadhtech.sa" },
+    update: {},
+    create: {
+      name: "Fahad Al-Otaibi",
+      email: "accountant@riyadhtech.sa",
+      password: hashedPassword,
+      role: "ACCOUNTANT",
+      tenantId: ksaTenant.id,
+    },
+  });
+
+  const egyUser = await prisma.user.upsert({
+    where: { email: "auditor@cairodigital.eg" },
+    update: {},
+    create: {
+      name: "Mariam El-Sayed",
+      email: "auditor@cairodigital.eg",
+      password: hashedPassword,
+      role: "AUDITOR",
+      tenantId: egyTenant.id,
+    },
+  });
+
+  console.log(`✅ Tenants & Users created:`);
+  console.log(`   - KSA Tenant: ${ksaTenant.name} (User: ${ksaUser.email}, Password: Password123!)`);
+  console.log(`   - EGY Tenant: ${egyTenant.name} (User: ${egyUser.email}, Password: Password123!)`);
+
+  // 3. Seed a Sample Pre-Audited Batch with Real-World Discrepancies
   console.log("\nSeeding pre-computed sample audit batch...");
   const seedInvoices = [
     {
@@ -107,8 +138,9 @@ async function main() {
 
   console.log(`✅ Seed batch created: ${batch.id} (${batch.name})`);
   console.log("\n=======================================================");
-  console.log("🎉 Database successfully seeded with demo data!");
+  console.log("🎉 Database successfully seeded with demo data & users!");
   console.log(`📖 Open Swagger UI:      http://localhost:3000/docs`);
+  console.log(`🔑 Demo User Login:      accountant@riyadhtech.sa / Password123!`);
   console.log(`📋 Inspect Seeded Batch: http://localhost:3000/api/v1/batches/${batch.id}`);
   console.log(`📄 Download Audit PDF:   http://localhost:3000/api/v1/batches/${batch.id}/report.pdf`);
   console.log(`💰 AI Cost Analytics:   http://localhost:3000/api/v1/audit/costs`);

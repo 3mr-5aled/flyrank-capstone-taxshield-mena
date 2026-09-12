@@ -73,7 +73,7 @@ TaxShield MENA uses a dual-layer architecture so arithmetic is 100% deterministi
 |---|---|---|
 | **1. API Endpoints & Validation** | REST HTTP API with Zod validation. Bad input strictly yields clean 400 JSON errors, never 500. | `src/modules/invoices/invoice.schema.ts` |
 | **2. Database & Persistence** | Relational schema with SQLite/PostgreSQL, migrations, and tenant isolation. | `prisma/schema.prisma` |
-| **3. Multi-Tenancy & Auth** | Tenant isolation ensuring each enterprise only views their own audit batches. | `src/modules/invoices/invoice.service.ts` |
+| **3. Authentication & JWT Security** | User registration, bcrypt password hashing, and JWT token issuance protecting tenant data. | `src/modules/auth/auth.service.ts` |
 | **4. Background Jobs & Queues** | Asynchronous batch worker (`POST /api/v1/batches`) with live percentage tracking (`0%` $\rightarrow$ `100%`). | `src/modules/batches/batch.service.ts` |
 | **5. Reporting (Executive PDF)** | PDFKit generator building an executive audit scorecard with KPI badges and discrepancy tables. | `src/modules/reports/pdf-report.generator.ts` |
 | **6. Caching & Fast Lookup** | Deduplication and vendor registration caching. | `src/modules/rules/tax-rules.engine.ts` |
@@ -95,7 +95,7 @@ npm install
 # 2. Initialize database schema
 npm run db:push
 
-# 3. Seed demo data (creates tenants, sample batches, and invoices)
+# 3. Seed demo data (creates tenants, sample users, batches, and invoices)
 npm run seed
 
 # 4. Start the application
@@ -105,6 +105,10 @@ npm run dev
 The system will start on:
 * **Interactive Swagger UI:** `http://localhost:3000/docs`
 * **Health Check:** `http://localhost:3000/health`
+
+### Seeded Credentials for Testing:
+* **Saudi Tenant Accountant:** `accountant@riyadhtech.sa` / `Password123!`
+* **Egyptian Tenant Auditor:** `auditor@cairodigital.eg` / `Password123!`
 
 ---
 

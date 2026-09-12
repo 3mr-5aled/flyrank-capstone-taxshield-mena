@@ -163,3 +163,44 @@ Content-Length: 3106
   }
 }
 ```
+
+---
+
+### Probe 8: User Authentication & JWT Flow (Concept 3)
+**Test:** `POST /api/v1/auth/register` and `POST /api/v1/auth/login`
+**Register Request:**
+```json
+{
+  "name": "Tariq Al-Harbi",
+  "email": "tariq@harbitaxtest.sa",
+  "password": "SecurePassword123!",
+  "tenantName": "Harbi Tax Consulting",
+  "taxId": "300888777666003",
+  "country": "KSA",
+  "role": "ACCOUNTANT"
+}
+```
+**Register Response (HTTP 201 Created):**
+```json
+{
+  "success": true,
+  "message": "User and tenant registered successfully",
+  "data": {
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "user": {
+      "id": "c71a3994-bfbc-4d8e-a9b1-5da09f9843a8",
+      "name": "Tariq Al-Harbi",
+      "email": "tariq@harbitaxtest.sa",
+      "role": "ACCOUNTANT",
+      "tenant": {
+        "id": "93425e4c-1e64-4e78-9e53-9ecf74136952",
+        "name": "Harbi Tax Consulting",
+        "taxId": "300888777666003",
+        "country": "KSA"
+      }
+    }
+  }
+}
+```
+**Login Verification:** Valid credentials return JWT token; invalid password returns HTTP `401 Unauthorized`. Protected endpoint `GET /api/v1/auth/me` without Bearer token returns HTTP `401 Unauthorized`.
+

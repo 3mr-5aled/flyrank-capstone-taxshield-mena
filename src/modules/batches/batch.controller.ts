@@ -5,6 +5,8 @@ import { BatchService } from "./batch.service.js";
 import { PdfReportGenerator } from "../reports/pdf-report.generator.js";
 import { GeminiTaxClassifier } from "../ai/gemini-tax.classifier.js";
 
+import { AuthenticatedRequest } from "../auth/auth.middleware.js";
+
 const CreateBatchSchema = z.object({
   name: z.string().optional(),
   invoices: z
@@ -14,7 +16,7 @@ const CreateBatchSchema = z.object({
 });
 
 export class BatchController {
-  public static async createBatch(req: Request, res: Response): Promise<void> {
+  public static async createBatch(req: AuthenticatedRequest, res: Response): Promise<void> {
     const parseResult = CreateBatchSchema.safeParse(req.body);
 
     if (!parseResult.success) {
@@ -32,7 +34,8 @@ export class BatchController {
     try {
       const batch = await BatchService.createAndQueueBatch(
         parseResult.data.name || "Pre-Filing Tax Batch Audit",
-        parseResult.data.invoices
+        parseResult.data.invoices,
+        req.user?.tenantId
       );
 
       // Return HTTP 202 Accepted (Background job queued)

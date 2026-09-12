@@ -152,6 +152,36 @@ async function runTestSuite() {
     assert(schemaRes.error.errors.length >= 5, "Returns granular field-level validation errors");
   }
 
+  // 4. Concept 3: User Authentication & JWT Flow
+  console.log("\n4. Testing Concept 3: User Authentication & JWT Security...");
+  const { AuthService } = await import("./modules/auth/auth.service.js");
+
+  const testEmail = `auditor-${Date.now()}@testcorp.sa`;
+  const regResult = await AuthService.register({
+    name: "Tariq Al-Harbi",
+    email: testEmail,
+    password: "SecureTaxPassword123!",
+    tenantName: "Harbi Financial Audit LLC",
+    taxId: `300${Date.now()}003`.slice(0, 15),
+    country: "KSA",
+    role: "ACCOUNTANT",
+  });
+  assert(Boolean(regResult.token && regResult.user.id), "User registration creates user, tenant, and returns valid JWT");
+
+  const loginResult = await AuthService.login({
+    email: testEmail,
+    password: "SecureTaxPassword123!",
+  });
+  assert(Boolean(loginResult.token && loginResult.user.email === testEmail), "Valid login returns authenticated JWT token");
+
+  let wrongPassFailed = false;
+  try {
+    await AuthService.login({ email: testEmail, password: "WrongPassword!" });
+  } catch {
+    wrongPassFailed = true;
+  }
+  assert(wrongPassFailed, "Rejects login with invalid credentials");
+
   console.log("\n==================================================");
   console.log(`🏁 Test Results: ${passed} Passed, ${failed} Failed`);
   console.log("==================================================\n");

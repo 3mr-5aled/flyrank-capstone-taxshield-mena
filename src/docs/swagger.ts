@@ -12,7 +12,21 @@ export const swaggerDocument = {
       description: "Local Development Server",
     },
   ],
+  components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "Enter your JWT token obtained from /api/v1/auth/login",
+      },
+    },
+  },
   tags: [
+    {
+      name: "Authentication",
+      description: "User registration, authentication, and tenant management",
+    },
     {
       name: "Batches",
       description: "Asynchronous batch invoice auditing and PDF report generation",
@@ -42,12 +56,71 @@ export const swaggerDocument = {
         },
       },
     },
+    "/api/v1/auth/register": {
+      post: {
+        summary: "Register a new enterprise user and tenant",
+        tags: ["Authentication"],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              example: {
+                name: "Ahmed Al-Mansoor",
+                email: "ahmed@riyadhtech.sa",
+                password: "StrongPassword123!",
+                tenantName: "Riyadh Digital Enterprise Ltd",
+                taxId: "300998877665003",
+                country: "KSA",
+                role: "ACCOUNTANT",
+              },
+            },
+          },
+        },
+        responses: {
+          "201": { description: "User registered with JWT token" },
+          "400": { description: "Validation error or user already exists" },
+        },
+      },
+    },
+    "/api/v1/auth/login": {
+      post: {
+        summary: "Authenticate user and obtain JWT token",
+        tags: ["Authentication"],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              example: {
+                email: "ahmed@riyadhtech.sa",
+                password: "StrongPassword123!",
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Login successful with JWT token" },
+          "401": { description: "Invalid credentials" },
+        },
+      },
+    },
+    "/api/v1/auth/me": {
+      get: {
+        summary: "Get current authenticated user profile",
+        tags: ["Authentication"],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          "200": { description: "Current user profile and tenant data" },
+          "401": { description: "Unauthorized / missing token" },
+        },
+      },
+    },
     "/api/v1/batches": {
       post: {
         summary: "Queue an asynchronous batch of supplier invoices for dual-layer audit",
         description:
           "Accepts a batch of supplier invoices, queues background processing, executes Layer 1 math and Layer 2 Gemini AI semantic audit off the HTTP thread, and updates progress in real time.",
         tags: ["Batches"],
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -113,7 +186,7 @@ export const swaggerDocument = {
                         unitPrice: 50,
                         subtotal: 5000,
                         vatRate: 0.14,
-                        vatAmount: 200, // Should be 700 EGP!
+                        vatAmount: 200,
                         total: 5200,
                       },
                     ],
@@ -192,8 +265,6 @@ export const swaggerDocument = {
     "/api/v1/audit/costs": {
       get: {
         summary: "Get AI Token Consumption and Cost Tracking Summary",
-        description:
-          "Retrieves aggregated Gemini Flash token usage, calculated USD expenditure, and per-call audit logs.",
         tags: ["Audit Costs"],
         responses: {
           "200": {
