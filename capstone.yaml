@@ -14,6 +14,9 @@ base_url: http://localhost:3000
 endpoints:
   health: /health
   swagger_ui: /docs
+  auth_register: /api/v1/auth/register
+  auth_login: /api/v1/auth/login
+  auth_me: /api/v1/auth/me
   single_audit: /api/v1/invoices/audit-single
   list_invoices: /api/v1/invoices
   create_batch: /api/v1/batches

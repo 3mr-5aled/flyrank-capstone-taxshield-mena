@@ -67,17 +67,17 @@ TaxShield MENA uses a dual-layer architecture so arithmetic is 100% deterministi
 
 ---
 
-## 3. The 5+ Program Concepts
+## 3. The 5+ Program Concepts (Count: 6 Concepts)
 
-| Concept | Implementation in TaxShield MENA | Proven in Code |
-|---|---|---|
-| **1. API Endpoints & Validation** | REST HTTP API with Zod validation. Bad input strictly yields clean 400 JSON errors, never 500. | `src/modules/invoices/invoice.schema.ts` |
-| **2. Database & Persistence** | Relational schema with SQLite/PostgreSQL, migrations, and tenant isolation. | `prisma/schema.prisma` |
-| **3. Authentication & JWT Security** | User registration, bcrypt password hashing, and JWT token issuance protecting tenant data. | `src/modules/auth/auth.service.ts` |
-| **4. Background Jobs & Queues** | Asynchronous batch worker (`POST /api/v1/batches`) with live percentage tracking (`0%` $\rightarrow$ `100%`). | `src/modules/batches/batch.service.ts` |
-| **5. Reporting (Executive PDF)** | PDFKit generator building an executive audit scorecard with KPI badges and discrepancy tables. | `src/modules/reports/pdf-report.generator.ts` |
-| **6. Caching & Fast Lookup** | Deduplication and vendor registration caching. | `src/modules/rules/tax-rules.engine.ts` |
-| **7. LLM Integration & Cost Log** | Gemini Flash 1.5 Arabic semantic audit with per-call token counting and USD telemetry. | `src/modules/ai/gemini-tax.classifier.ts` |
+| # | Concept | Implementation in TaxShield MENA | Where It Lives in the Code |
+|---|---|---|---|
+| **1** | **API Endpoints & Validation** | RESTful HTTP API with Zod validation. Bad input strictly yields clean 400 JSON errors, never 500. | `src/modules/invoices/invoice.schema.ts`, `src/routes/api.router.ts` |
+| **2** | **Database & Persistence** | Relational schema with SQLite/PostgreSQL, migrations, and tenant isolation. | `prisma/schema.prisma` |
+| **3** | **Authentication & JWT Security** | User registration, bcrypt password hashing, and JWT token issuance protecting tenant data. | `src/modules/auth/auth.service.ts`, `src/modules/auth/auth.middleware.ts` |
+| **4** | **Background Jobs & Queues** | Asynchronous batch worker (`POST /api/v1/batches`) with live percentage tracking (`0%` $\rightarrow$ `100%`). | `src/modules/batches/batch.service.ts` |
+| **5** | **Reporting (Executive PDF)** | PDFKit generator building an executive audit scorecard with KPI badges and discrepancy tables. | `src/modules/reports/pdf-report.generator.ts` |
+| **7** | **LLM Integration & Cost Log** | Gemini Flash Arabic semantic audit with per-call token counting and USD telemetry. | `src/modules/ai/gemini-tax.classifier.ts` |
+| *Swap* | **Test Suite** *(replacing Caching)* | Caching was swapped for a comprehensive automated test suite (13 unit/integration tests + 19 end-to-end route tests) because tax auditing mandates fresh, deterministic evaluation on every batch without stale cached results. | `src/test-all.ts`, `src/test-all-routes.ts` |
 
 ---
 
@@ -152,14 +152,15 @@ Follow these steps to demonstrate the full end-to-end 10x value in under 5 minut
 
 ---
 
-## 6. Automated Test Suite
-
-Run all deterministic rule checks, AI semantic anomaly assertions, and boundary schema tests with one command:
-
+## 6. Automated Test Suites
+ 
+### 1. Unit & Integration Test Suite (`npm test`)
+Run all deterministic rule checks, AI semantic anomaly assertions, schema boundary tests, and authentication flows:
+ 
 ```bash
 npm test
 ```
-
+ 
 Expected output:
 ```
 ==================================================
@@ -170,21 +171,33 @@ Expected output:
   ✅ PASS: Rejects invalid Saudi TIN (not 15 digits or not starting/ending with 3)
   ✅ PASS: Catches line-item VAT rate calculation discrepancy
   ✅ PASS: Valid Egyptian 14% VAT invoice passes
-
+ 
 2. Testing Layer 2: AI Semantic Arabic Risk Classifier...
   ✅ PASS: Flags personal luxury Rolex watch disguised as business expense
   ✅ PASS: Calculates AI tokens and USD cost
   ✅ PASS: Flags capital asset (Vehicle) improperly expensed as OpEx
   ✅ PASS: Approves legitimate business IT hosting without false flags
-
+ 
 3. Testing Boundary Schema Validation (Clean 4xx, Never 500)...
   ✅ PASS: Schema boundary blocks invalid country, negative amounts, empty items
   ✅ PASS: Returns granular field-level validation errors
-
+ 
+4. Testing Concept 3: User Authentication & JWT Security...
+  ✅ PASS: User registration creates user, tenant, and returns valid JWT
+  ✅ PASS: Valid login returns authenticated JWT token
+  ✅ PASS: Rejects login with invalid credentials
+ 
 ==================================================
-🏁 Test Results: 10 Passed, 0 Failed
+🏁 Test Results: 13 Passed, 0 Failed
 ==================================================
 ```
+
+### 2. End-to-End 19-Route Integration Suite (`npm run test:routes`)
+Test every single HTTP route end-to-end against live endpoints:
+```bash
+npm run test:routes
+```
+Output: **19/19 routes passed (100%)** covering auth, invoices, batches, polling, PDF generation, AI costs, and error boundaries.
 
 ---
 

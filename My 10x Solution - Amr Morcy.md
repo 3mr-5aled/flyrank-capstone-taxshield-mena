@@ -28,7 +28,7 @@ Auditing 200 supplier invoices by hand takes an internal accounting team **2 ful
 ### Architectural Overview: The Dual-Layer Audit Engine
 Financial systems cannot afford LLM hallucinations on math. TaxShield MENA uses a strict **dual-layer architecture**:
 1. **Layer 1: Deterministic Rule Engine (Zero Hallucinations)**: Written in pure TypeScript (`src/modules/tax-engine/tax-rules.engine.ts`), this layer validates tax IDs, enforces arithmetic integrity down to the decimal cent, validates country-specific VAT rates, and checks line item sums.
-2. **Layer 2: Gemini AI Semantic Arabic Classifier (`gemini-1.5-flash`)**: The line items and invoice descriptions are inspected by an LLM trained to understand Arabic and bilingual MENA business semantics (`src/modules/ai/gemini-tax.classifier.ts`). It flags personal luxury expenses, OpEx vs. CapEx mismatches, and logs input/output tokens along with exact USD API costs for every call. If offline or running without an API key, it seamlessly falls back to a deterministic semantic dictionary so tests never fail.
+2. **Layer 2: Gemini AI Semantic Arabic Classifier (`gemini-3.6-flash`)**: The line items and invoice descriptions are inspected by an LLM trained to understand Arabic and bilingual MENA business semantics (`src/modules/ai/gemini-tax.classifier.ts`). It flags personal luxury expenses, OpEx vs. CapEx mismatches, and logs input/output tokens along with exact USD API costs for every call. If offline or running without an API key, it seamlessly falls back to a deterministic semantic dictionary so tests never fail.
 
 ### Background Asynchronous Processing
 Large invoice batches (`1` to `200` invoices) are submitted via `POST /api/v1/batches`. The system responds immediately with `HTTP 202 Accepted` and an asynchronous tracking URL. A background worker audits the invoices sequentially off the HTTP request thread, updating live percentage progress (`0%` $\rightarrow$ `100%`), compliant vs. flagged counters, and persisting each invoice and finding to the database.
@@ -45,12 +45,12 @@ Once a batch completes, accountants download a boardroom-ready PDF audit report 
 
 | # | Concept | Where It Lives in the Code | Details |
 |---|---|---|---|
-| **1** | **API Endpoints** | `src/routes/api.routes.ts`, `src/modules/invoices/invoice.schema.ts` | RESTful HTTP API with Zod schema validation boundaries, semantic HTTP status codes (`200`, `201`, `202`, `400`, `401`, `404`), and interactive Swagger UI at `/docs`. |
-| **2** | **Database** | `prisma/schema.prisma`, `src/config/database.ts` | Relational SQLite persistence via Prisma ORM (`dev.db`). Tables for `tenants`, `users`, `batches`, `invoices`, `line_items`, `audit_findings`, and `ai_cost_logs`. Data survives restarts. |
-| **3** | **Authentication** | `src/modules/auth/auth.routes.ts`, `src/modules/auth/auth.middleware.ts` | Multi-tenant auth with bcrypt password hashing, signed JWT tokens, and `requireAuth` middleware protecting sensitive routes with HTTP `401`. |
-| **4** | **Background Jobs** | `src/modules/batches/batch-queue.service.ts` | Asynchronous batch auditor processing up to 200 invoices off the HTTP thread with real-time percentage progress tracking (`0%` $\rightarrow$ `100%`). |
+| **1** | **API Endpoints** | `src/routes/api.router.ts`, `src/modules/invoices/invoice.schema.ts` | RESTful HTTP API with Zod schema validation boundaries, semantic HTTP status codes (`200`, `201`, `202`, `400`, `401`, `404`), and interactive Swagger UI at `/docs`. |
+| **2** | **Database** | `prisma/schema.prisma`, `src/db/prisma.ts` | Relational SQLite persistence via Prisma ORM (`dev.db`). Tables for `tenants`, `users`, `batches`, `invoices`, `line_items`, `audit_findings`, and `ai_cost_logs`. Data survives restarts. |
+| **3** | **Authentication** | `src/modules/auth/auth.controller.ts`, `src/modules/auth/auth.middleware.ts` | Multi-tenant auth with bcrypt password hashing, signed JWT tokens, and `requireAuth` middleware protecting sensitive routes with HTTP `401`. |
+| **4** | **Background Jobs** | `src/modules/batches/batch.service.ts` | Asynchronous batch auditor processing up to 200 invoices off the HTTP thread with real-time percentage progress tracking (`0%` $\rightarrow$ `100%`). |
 | **5** | **Reporting (PDF)** | `src/modules/reports/pdf-report.generator.ts` | Boardroom-ready PDF reports generated with `pdfkit` featuring executive KPI cards, financial rollups, and discrepancy tables. |
-| **7** | **LLM Integration** | `src/modules/ai/gemini-tax.classifier.ts` | Google Gemini 1.5 Flash integration classifying Arabic/English line items for tax fraud with per-call token and USD cost tracking in `ai_cost_logs`. |
+| **7** | **LLM Integration** | `src/modules/ai/gemini-tax.classifier.ts` | Google Gemini 3.6 Flash integration classifying Arabic/English line items for tax fraud with per-call token and USD cost tracking in `ai_cost_logs`. |
 | *Swap* | **Test Suite** *(in place of Caching Logic)* | `src/test-all.ts`, `src/test-all-routes.ts` | Caching was swapped for a comprehensive automated test suite (13 unit/integration tests + 19 end-to-end route tests) because tax auditing mandates fresh, deterministic evaluation on every batch without stale cached results. |
 
 ---
