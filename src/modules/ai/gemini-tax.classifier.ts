@@ -25,7 +25,7 @@ export class GeminiTaxClassifier {
   private static readonly OUTPUT_PRICE_PER_M = 0.30;
 
   public static async analyzeInvoice(
-    invoiceId: string,
+    invoiceId: string | undefined,
     supplierName: string,
     country: string,
     lineItems: Array<{ description: string; subtotal: number }>
@@ -48,7 +48,7 @@ export class GeminiTaxClassifier {
   }
 
   private static async callGeminiApi(
-    invoiceId: string,
+    invoiceId: string | undefined,
     supplierName: string,
     country: string,
     lineItems: Array<{ description: string; subtotal: number }>,
@@ -132,7 +132,7 @@ Return ONLY a raw valid JSON object (no markdown, no backticks) with this struct
    * Deterministic semantic heuristic engine for offline development and acceptance testing
    */
   private static async fallbackSemanticAnalysis(
-    invoiceId: string,
+    invoiceId: string | undefined,
     supplierName: string,
     country: string,
     lineItems: Array<{ description: string; subtotal: number }>,
@@ -144,6 +144,7 @@ Return ONLY a raw valid JSON object (no markdown, no backticks) with this struct
         patterns: [/رولكس/i, /rolex/i, /ذهب/i, /gold watch/i, /مجوهرات/i, /jewelry/i, /عطور فاخرة/i],
         ruleCode: "EXPENSE_MISCLASSIFICATION",
         severity: "CRITICAL" as const,
+        enCategory: "Rolex Luxury Watch / Jewelry",
         en: "Personal luxury item detected; strictly prohibited as deductible business input VAT.",
         ar: "تم رصد مشتريات شخصية فاخرة؛ محظور نظاماً خصم ضريبتها كمدخلات أعمال.",
       },
@@ -151,6 +152,7 @@ Return ONLY a raw valid JSON object (no markdown, no backticks) with this struct
         patterns: [/سيارة خاصة/i, /شراء سيارة/i, /private vehicle/i, /مركبة فارهة/i],
         ruleCode: "CAPEX_AS_OPEX",
         severity: "HIGH" as const,
+        enCategory: "Capital Asset (Vehicle)",
         en: "Capital asset (Vehicle) improperly billed as operational expense; requires depreciation schedule.",
         ar: "أصل رأسمالي (مركبة) مدرج كمصروف تشغيلي؛ يتطلب جدول إهلاك محاسبي.",
       },
@@ -158,6 +160,7 @@ Return ONLY a raw valid JSON object (no markdown, no backticks) with this struct
         patterns: [/تذاكر سياحية/i, /رحلة استجمام/i, /holiday resort/i, /تذاكر طيران عائلية/i],
         ruleCode: "SUSPICIOUS_PERSONAL_EXPENSE",
         severity: "HIGH" as const,
+        enCategory: "Recreational Travel / Resort",
         en: "Recreational travel expenses detected; ineligible for corporate tax deduction without commercial nexus.",
         ar: "مصروفات سفر واستجمام غير مرتبطة بنشاط الشركة؛ غير مؤهلة للخصم الضريبي.",
       },
@@ -166,11 +169,13 @@ Return ONLY a raw valid JSON object (no markdown, no backticks) with this struct
     lineItems.forEach((item, idx) => {
       for (const rule of suspiciousKeywords) {
         if (rule.patterns.some((p) => p.test(item.description))) {
+          const englishParens = item.description.match(/\(([^)]+)\)/)?.[1]?.trim();
+          const label = englishParens || rule.enCategory;
           findings.push({
             ruleCode: rule.ruleCode,
             layer: "AI_SEMANTIC",
             severity: rule.severity,
-            messageEn: `Line ${idx + 1} ("${item.description}"): ${rule.en}`,
+            messageEn: `Line ${idx + 1} (${label}): ${rule.en}`,
             messageAr: `البند رقم ${idx + 1} ("${item.description}"): ${rule.ar}`,
             expectedValue: "Legitimate Corporate OpEx",
             actualValue: item.description,
