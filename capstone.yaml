@@ -1,0 +1,22 @@
+name: flyrank-capstone-taxshield-mena
+version: 1.0.0
+track: backend
+capstone: your-10x-solution
+
+# Machine-checkable execution commands
+run: npm run dev
+seed: npm run seed
+test: npm run test
+
+base_url: http://localhost:3000
+
+# Acceptance probe endpoints
+endpoints:
+  health: /health
+  swagger_ui: /docs
+  single_audit: /api/v1/invoices/audit-single
+  list_invoices: /api/v1/invoices
+  create_batch: /api/v1/batches
+  get_batch: /api/v1/batches/:id
+  download_pdf: /api/v1/batches/:id/report.pdf
+  ai_costs: /api/v1/audit/costs
