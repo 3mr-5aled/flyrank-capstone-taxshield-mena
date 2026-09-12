@@ -1,6 +1,7 @@
 import { prisma } from "../../db/prisma.js";
 import { AuditInvoiceInput } from "./invoice.schema.js";
-import { TaxRulesEngine, RuleAuditResult } from "../rules/tax-rules.engine.js";
+import { TaxRulesEngine, RuleAuditResult, Finding } from "../rules/tax-rules.engine.js";
+import { GeminiTaxClassifier } from "../ai/gemini-tax.classifier.js";
 
 export class InvoiceService {
   public static async auditAndPersist(
@@ -15,7 +16,7 @@ export class InvoiceService {
     isCompliant: boolean;
     hasErrors: boolean;
     findingsCount: number;
-    findings: RuleAuditResult["findings"];
+    findings: Finding[];
     summary: {
       subtotal: number;
       totalVat: number;
@@ -23,12 +24,22 @@ export class InvoiceService {
     };
   }> {
     // 1. Run deterministic Layer 1 Tax Rule Engine
-    const auditResult = TaxRulesEngine.audit(input);
-    const invoiceStatus = auditResult.isCompliant
-      ? "COMPLIANT"
-      : auditResult.hasErrors
-      ? "FLAGGED"
-      : "WARNING";
+    const ruleResult = TaxRulesEngine.audit(input);
+
+    // 2. Run Layer 2: Gemini AI Semantic Arabic & Expense Anomaly Classifier
+    const aiResult = await GeminiTaxClassifier.analyzeInvoice(
+      undefined,
+      input.supplierName,
+      input.country,
+      input.lineItems.map((l) => ({ description: l.description, subtotal: l.subtotal }))
+    );
+
+    const allFindings: Finding[] = [...ruleResult.findings, ...aiResult.findings];
+    const hasErrors =
+      ruleResult.hasErrors ||
+      aiResult.findings.some((f) => f.severity === "CRITICAL" || f.severity === "HIGH");
+    const isCompliant = allFindings.length === 0;
+    const invoiceStatus = isCompliant ? "COMPLIANT" : hasErrors ? "FLAGGED" : "WARNING";
 
     const currency = input.currency || (input.country === "KSA" ? "SAR" : "EGP");
 
@@ -61,7 +72,7 @@ export class InvoiceService {
         totalAmount: input.totalAmount,
         currency,
         status: invoiceStatus,
-        hasErrors: auditResult.hasErrors,
+        hasErrors,
         lineItems: {
           create: input.lineItems.map((item) => ({
             description: item.description,
@@ -74,7 +85,7 @@ export class InvoiceService {
           })),
         },
         findings: {
-          create: auditResult.findings.map((f) => ({
+          create: allFindings.map((f) => ({
             ruleCode: f.ruleCode,
             layer: f.layer,
             severity: f.severity,
@@ -96,10 +107,10 @@ export class InvoiceService {
       country: savedInvoice.country,
       currency: savedInvoice.currency,
       status: savedInvoice.status,
-      isCompliant: auditResult.isCompliant,
-      hasErrors: auditResult.hasErrors,
-      findingsCount: auditResult.findings.length,
-      findings: auditResult.findings,
+      isCompliant,
+      hasErrors,
+      findingsCount: allFindings.length,
+      findings: allFindings,
       summary: {
         subtotal: savedInvoice.subtotal,
         totalVat: savedInvoice.totalVat,
