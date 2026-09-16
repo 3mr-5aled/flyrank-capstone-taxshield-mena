@@ -3,8 +3,13 @@
 
 <div align="center">
 
+<img src="./assets/taxshield-mena-banner.png" alt="TaxShield MENA AI Invoice Defense" width="100%" />
+
+<br/><br/>
+
 [![FlyRank Capstone](https://img.shields.io/badge/FlyRank_Capstone-Your_10x_Solution-success?style=for-the-badge&logo=shield)](https://github.com/3mr-5aled/flyrank-capstone-taxshield-mena)
-[![Certificate ID](https://img.shields.io/badge/Certificate_ID-FR--D11--0A358--5D8C2-blue?style=for-the-badge)](https://internship.flyrank.ai/verify?id=FR-D11-0A358-5D8C2)
+[![Backend AI Credential](https://img.shields.io/badge/Backend_AI-FR--D11--0A358--5D8C2-blue?style=for-the-badge)](https://internship.flyrank.ai/verify/FR-D11-0A358-5D8C2?first_name=Amr)
+[![AI Fluency Track](https://img.shields.io/badge/AI_Fluency-FR--D11--0BB88--8D25F-blueviolet?style=for-the-badge)](https://internship.flyrank.ai/verify/FR-D11-0BB88-8D25F?first_name=Amr)
 [![Final Evaluation](https://img.shields.io/badge/Evaluation-FR--D8--313B4--69F3D-teal?style=for-the-badge)](https://internship.flyrank.ai/verify?id=FR-D8-313B4-69F3D)
 [![Tests Passing](https://img.shields.io/badge/Tests-13%2F13_Passed-brightgreen?style=for-the-badge&logo=jest)](https://github.com/3mr-5aled/flyrank-capstone-taxshield-mena)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
@@ -13,7 +18,7 @@
 **Author:** [Amr Khaled Morcy](https://github.com/3mr-5aled) — *Back-End AI Engineering Intern*  
 **Program:** [FlyRank AI Internship](https://github.com/3mr-5aled/flyrank-ai-internship) (July 1 – September 16, 2026)  
 **Supervisor of Record:** Arijana Ibrović (Director of Internship Program) • **Program Approval:** Alen Malkoc (Founder & CEO, FlyRank Corp.)  
-**Official Verifications:** [Certificate of Completion](https://internship.flyrank.ai/verify?id=FR-D11-0A358-5D8C2) • [Final Evaluation Report](https://internship.flyrank.ai/verify?id=FR-D8-313B4-69F3D) • [Recommendation Letter](https://internship.flyrank.ai/verify?id=FR-D10-4B9AF-BA6BE) • [Main Assignment Repo](https://github.com/3mr-5aled/flyrank-ai-internship)
+**Official Verifications:** [Backend AI Certificate](https://internship.flyrank.ai/verify/FR-D11-0A358-5D8C2?first_name=Amr) • [AI Fluency Certificate](https://internship.flyrank.ai/verify/FR-D11-0BB88-8D25F?first_name=Amr) • [Final Evaluation Report](https://internship.flyrank.ai/verify?id=FR-D8-313B4-69F3D) • [Recommendation Letter](https://internship.flyrank.ai/verify?id=FR-D10-4B9AF-BA6BE) • [Main Assignment Repo](https://github.com/3mr-5aled/flyrank-ai-internship)
 
 </div>
 
